@@ -1,4 +1,4 @@
-public final class Card {
+public final class Card { //make it this class thread-safe
     private final int value;
 
     //ensure the card is positive value
