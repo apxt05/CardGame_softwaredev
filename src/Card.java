@@ -26,7 +26,7 @@ public final class Card { //make this class thread-safe - therefore no setters
     // obj is the object to compare
     // return true if both cards have the same value
     @Override
-    public boolean equals (Objet obj) {
+    public boolean equals (Object obj) {
         if (this == obj) return true;
         if (!(obj instanceof Card)) return false;
         Card other = (Card) obj;
@@ -35,7 +35,7 @@ public final class Card { //make this class thread-safe - therefore no setters
 
     // Returns a hash code consistent with equals()
      @Override
-     public int hasCode() {
+     public int hashCode() {
         return Integer.hashCode(value);
      }
 }

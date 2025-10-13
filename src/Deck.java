@@ -7,6 +7,7 @@
 public class Deck {
     private final int deckId;
     private final Queue<Card> cards;
+    private final int id;
 
     public synchronized Card drawCard() {
 
@@ -17,4 +18,8 @@ public class Deck {
     public List<Card> getContents() { //for writing to deck(X)_output.txt
 
     }    
+
+    public int getId() {
+        this.id = id;
+    }
 }
