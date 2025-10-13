@@ -13,8 +13,25 @@
 // 
 
 public class Player{ 
-    
+    private final int playerId;
+    private final int preferredValue;
+    private final List<Card> hand;
+    private final Deck leftDeck;
+    private final Deck rightDeck;
+    private final PrintWriter outputWriter;
+    private final GameController controller; // to check for game-over signals
 
+    public void run() { //main loop: draw --> discard --> check win --> repeat
 
+    }
+    public boolean hasWinningHand() {
+
+    }
+    private void discardNonPreferredCard() {
+
+    }
+    private void logAction(String message) {
+
+    }
 
 }

@@ -1,7 +1,9 @@
-public final class Card { //make it this class thread-safe
+// Purpose - Represents a single card as an integer value
+
+public final class Card { //make this class thread-safe - therefore no setters
     private final int value;
 
-    //ensure the card is positive value
+    // Constructs and ensures the card is a positive value
     public Card(int value) {
         if (value<0) {
             throw new IllegalArgumentException("Card number must be a positive integer");
@@ -9,8 +11,32 @@ public final class Card { //make it this class thread-safe
         this.value = value;
     }
 
+    // Method to return the face value of the card
     public int getValue() {
         return value;
     }
+
+    // Method to provide a readable string representation of the card
+    @Override
+    public String toString() {
+        return String.valueOf(value);
+    }
+
+    // Compares this card with another for equality
+    // obj is the object to compare
+    // return true if both cards have the same value
+    @Override
+    public boolean equals (Objet obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof Card)) return false;
+        Card other = (Card) obj;
+        return this.value == other.value;
+     }
+
+    // Returns a hash code consistent with equals()
+     @Override
+     public int hasCode() {
+        return Integer.hashCode(value);
+     }
 }
 

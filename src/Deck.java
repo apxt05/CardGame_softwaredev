@@ -5,5 +5,16 @@
 // At the end of a game, each deck's final contents are written to deckX_output.txt
 
 public class Deck {
+    private final int deckId;
+    private final Queue<Card> cards;
 
+    public synchronized Card drawCard() {
+
+    }
+    public synchronized void addCard(Card card) {
+
+    }
+    public List<Card> getContents() { //for writing to deck(X)_output.txt
+
+    }    
 }
