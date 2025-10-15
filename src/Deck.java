@@ -22,7 +22,7 @@ public class Deck {
         return cards.poll();
     }
     public synchronized void addCard(Card card) {
-
+        cards.offer(card);
     }
     public List<Card> getContents() { //for writing to deck(X)_output.txt
         return List.copyOf(cards);
