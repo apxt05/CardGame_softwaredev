@@ -71,15 +71,30 @@ public class Player implements Runnable {
     }
 
     private synchronized Card discardCard() {
-
-    }
-
-    public void run() { //main loop: draw --> discard --> check win --> repeat
-
+        // Discard a card that is not the preferred value, if possible
+        for (int i = 0; i < hand.size(); i++) {
+            Card c = hand.get(i);
+            if (c.getValue() != preferredValue) {
+                return hand.remove(i);
+            }
+        }
+        // If all cards are preferred value, discard the first card
+        if (!hand.isEmpty()) {
+            return hand.remove(0);
+        }
+        return null; // No card to discard
     }
 
     private void logAction(String message) {
-
+        if (outputWriter != null) {
+            outputWriter.println(message);
+            outputWriter.flush();
+        }
     }
 
+    @Override
+    public void run() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'run'");
+    }
 }

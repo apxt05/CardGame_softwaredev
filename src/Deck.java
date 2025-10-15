@@ -4,22 +4,31 @@
 // Drawing and discarding are treated as one atomic action
 // At the end of a game, each deck's final contents are written to deckX_output.txt
 
+import java.util.Queue;
+import java.util.List;
+
 public class Deck {
     private final int deckId;
     private final Queue<Card> cards;
     private final int id;
 
-    public synchronized Card drawCard() {
+    public Deck(Queue<Card> cards, int deckId, int id) {
+        this.cards = cards;
+        this.deckId = deckId;
+        this.id = id;
+    }
 
+    public synchronized Card drawCard() {
+        return cards.poll();
     }
     public synchronized void addCard(Card card) {
 
     }
     public List<Card> getContents() { //for writing to deck(X)_output.txt
-
+        return List.copyOf(cards);
     }    
 
     public int getId() {
-        this.id = id;
+        return id;
     }
 }

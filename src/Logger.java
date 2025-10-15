@@ -2,7 +2,12 @@
 // Reusable - same class works for player and decks
 // Robust - Handles missing or inaccessible files as error
 
-public class Logger() {
+import java.io.PrintWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+
+
+public class Logger {
     private final String filename;
     private final PrintWriter writer;
 
@@ -38,8 +43,6 @@ public class Logger() {
 
     // Returns the file name
     public String getFileName() {
-        public String getFileName() {
-            return filename;
-        }
+        return filename;
     }
 }

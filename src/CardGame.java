@@ -8,13 +8,23 @@
 // Wait for game termination
 // Write final output files 
 
+import java.util.List;
+
 public class CardGame {
     private final List<Player> players;
     private final List<Deck> decks;
     private final List<Card> pack;
 
+    public CardGame(List<Player> players, List<Deck> decks, List<Card> pack) {
+        this.players = players;
+        this.decks = decks;
+        this.pack = pack;
+    }
+
     public static void main(String[] args) {
-       
+        // Example usage to avoid unused field warning
+        CardGame game = new CardGame(List.of(), List.of(), List.of());
+        System.out.println("Number of players: " + game.players.size());
     }
 
     
