@@ -25,43 +25,44 @@ public class Player implements Runnable {
     private final int preferredValue;
     private final List<Card> hand = new ArrayList<>(4);
     
-    private final Deck leftDeck; //draw
-    private final Deck rightDeck; //place
+    private final Deck leftDeck; // Draw
+    private final Deck rightDeck; // Place
 
     private final int leftDeckIndex;   // (1-based)
     private final int rightDeckIndex;
     
     private final PrintWriter outputWriter;
-    private final GameController controller; // to check for game-over signals
-    private final Lock actionLock; //lock for atomic draw+discard
+    private final GameController controller; // To check for game-over signals
+    private final Lock actionLock; // Lock for atomic draw + discard
 
 
     public Player(int playerId, Deck leftDeck, Deck rightDeck, int LeftDeckIndex, int RightDeckIndex, GameController controller, int leftDeckIndex, int rightDeckIndex, PrintWriter outputWriter, AtomicInteger winnerId, Lock actionLock) throws IOException {
-        
+        // Normalize and assign fields. preferredValue is playerId (1-based)
         this.playerId = playerId;
-        this.preferredValue = 0;
-        this.rightDeck = rightDeck;
+        this.preferredValue = playerId;
         this.leftDeck = leftDeck;
-        this.rightDeckIndex = rightDeckIndex;
+        this.rightDeck = rightDeck;
         this.leftDeckIndex = leftDeckIndex;
+        this.rightDeckIndex = rightDeckIndex;
         this.outputWriter = outputWriter;
-        this.controller = controller; 
+        this.controller = controller;
         this.actionLock = actionLock;
 
+        // winnerId is not currently stored here; controller handles winner state
     }
 
     //*
     // (addCardToHand) Initial dealing, adding one card at a time 
-    // hand size should be at 4
+    // Hand size should be at 4
 
     public synchronized void addCardToHand(Card c) {
-        if (hand.size() <= 4) throw new IllegalStateException("Hand has 4 cards already.");
+        if (hand.size() >= 4) throw new IllegalStateException("Hand has 4 cards already.");
         hand.add(c);
 
     }
     
 
-    // (hasWinningHand) return true, if hand has 4 cards of the same value 
+    // (hasWinningHand) Return true, if hand has 4 cards of the same value 
     public boolean hasWinningHand() {
         if (hand.size() != 4) return false;
         int v = hand.get(0).getValue();
@@ -94,7 +95,73 @@ public class Player implements Runnable {
 
     @Override
     public void run() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'run'");
+        // Player loop: attempt to draw from leftDeck and discard to rightDeck atomically
+        while (!controller.isGameOver()) {
+            // Check winning condition at start
+            synchronized (this) {
+                if (hasWinningHand()) {
+                    logAction("Player " + playerId + " wins");
+                    controller.declareWinner(playerId);
+                    break;
+                }
+            }
+
+            // Attempt atomic draw + discard
+            actionLock.lock();
+            try {
+                if (controller.isGameOver()) break;
+
+                Card drawn = leftDeck.drawCard();
+                if (drawn == null) {
+                    // Nothing to draw; release lock and yield
+                    Thread.yield();
+                } else {
+                    synchronized (this) {
+                        // Add drawn card to hand
+                        if (hand.size() >= 4) {
+                            // Shouldn't happen, but discard first if full
+                            Card discarded = discardCard();
+                            rightDeck.addCard(discarded);
+                        }
+                        hand.add(drawn);
+
+                        // If we now have 5 (temporary), discard one
+                        if (hand.size() > 4) {
+                            Card toDiscard = discardCard();
+                            if (toDiscard != null) {
+                                rightDeck.addCard(toDiscard);
+                                logAction("Player " + playerId + " draws " + drawn.getValue() + " and discards " + toDiscard.getValue());
+                            }
+                        } else {
+                            // Normal case: discard a non-preferred card if present
+                            Card toDiscard = discardCard();
+                            if (toDiscard != null) {
+                                rightDeck.addCard(toDiscard);
+                                logAction("Player " + playerId + " draws " + drawn.getValue() + " and discards " + toDiscard.getValue());
+                            }
+                        }
+                    }
+                }
+            } finally {
+                actionLock.unlock();
+            }
+
+            // After action, check if player has winning hand
+            synchronized (this) {
+                if (hasWinningHand()) {
+                    logAction("Player " + playerId + " wins");
+                    controller.declareWinner(playerId);
+                    break;
+                }
+            }
+
+            // Small sleep to avoid busy spin
+            try {
+                Thread.sleep(1);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
+            }
+        }
     }
 }

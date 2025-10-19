@@ -17,7 +17,6 @@ public class GameController {
         return winningPlayerId;
     }
     public void setWinner(int playerId) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'setWinner'");
+        declareWinner(playerId);
     }
 }
