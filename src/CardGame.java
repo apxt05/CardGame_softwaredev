@@ -8,25 +8,84 @@
 // Wait for game termination
 // Write final output files 
 
+import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
+
 
 public class CardGame {
-    private final List<Player> players;
-    private final List<Deck> decks;
-    private final List<Card> pack;
-
-    public CardGame(List<Player> players, List<Deck> decks, List<Card> pack) {
-        this.players = players;
-        this.decks = decks;
-        this.pack = pack;
-    }
-
+  
     public static void main(String[] args) {
-        // Example usage to avoid unused field warning
-        CardGame game = new CardGame(List.of(), List.of(), List.of());
-        System.out.println("Number of players: " + game.players.size());
-    }
+        Scanner scanner = new Scanner(System.in);
+        int n = 0;
+        List<Integer> rawPack = new ArrayList<>();
+
+    // Get number of players from user
+    while (true) {
+        System.out.print("Enter number of players (n): ");
+                String input = scanner.nextLine().trim();
+        try {
+            n = Integer.parseInt(input);
+            if (n <= 0) {
+                System.out.println("Number of players must be a positive integer.");
+                continue; 
+            
+        }
 
     
 
+            // Load and validate pack
+            System.out.print("Enter path to pack file: ");
+                String path = scanner.nextLine().trim();
+                
+            if (path.isEmpty()) {
+                System.out.println("Please enter path.");
+                continue;
+            }
+
+            File packFile = new File(path);
+            if (!packFile.exists() || !packFile.isFile()) {
+                System.out.println("Pack file not found. Please enter a valid file path.");
+                continue;
+            }
+
+            rawPack = readPackFileStrict(packFile);
+                if (rawPack == null || rawPack.size() != 8 * n) {
+                    System.out.println("Pack file invalid: must contain exactly " + (8 * n) + " non-negative integers.");
+                    continue;
+                }
+
+                break; // valid input
+
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid input. Please enter a positive integer for number of players.");
+            }
+        }
+
+        scanner.close();        
+    }
+
+    // Reads the pack file strictly, returning null on any invalidity
+    private static List<Integer> readPackFileStrict(File f) {
+        List<Integer> list = new ArrayList<>();
+        try (Scanner sc = new Scanner(f)) {
+            while (sc.hasNextLine()) {
+                String line = sc.nextLine().trim();
+                if (line.isEmpty()) return null;
+                int value = Integer.parseInt(line);
+                if (value < 0) return null;
+                list.add(value);
+            }
+        } catch (Exception e) {
+            return null;
+        }
+        return list;
+    }
+
 }
+
+
+
+
+    
