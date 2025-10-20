@@ -9,6 +9,9 @@
 // Write final output files 
 
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -66,7 +69,7 @@ public class CardGame {
                 System.out.println("Invalid input. Please enter a positive integer for number of players.");
             }
         }
-
+        //scanner done
         scanner.close();        
     
 
@@ -79,11 +82,50 @@ public class CardGame {
         decks.add(new Deck(q, i, i)); 
     }
 
-    GameController controller = new GameController();
+    GameController controller = new GameController(); // to handle gameover
     ReentrantLock actionLock = new ReentrantLock();
     AtomicInteger winnerId = new AtomicInteger(0);
 
+    // creating the players
+
+    List<Player> players = new ArrayList<>();
+
+    // deck is in ring topology
+    for (int i = 1; i <= n; i++) {
+        try {
+            PrintWriter outputWriter = new PrintWriter(new FileWriter("player" + i + "_output.txt")); // output file 
+            int leftDeckIndex = i; //player draws from left deck
+            int RightDeckIndex = (i % n) + 1; // player discards here
+            
+            //create player object
+            players.add(new Player(i, decks.get(leftDeckIndex - 1), decks.get(RightDeckIndex - 1), leftDeckIndex, RightDeckIndex, controller, leftDeckIndex, RightDeckIndex, outputWriter, winnerId, actionLock));
+      
+            //error dealing
+        } catch (IOException e) {
+            System.out.println("Error in creating output file for player " + i);
+            return;         
+        }
+
     }
+
+    // Dealing cards round robin
+    int cardIndex = 0;
+    // 4 rounds, each player gets one card per round
+    for (int round = 0; round < 4; round++) {
+        for (int i = 0; i < n; i++) {
+            int cardValue = rawPack.get(cardIndex++);
+            players.get(i).addCardToHand(new Card(cardValue));
+        }
+    }
+    // start threads for player
+    List<Thread> threads = new ArrayList<>();
+    for (Player p:players) {
+        Thread t = new Thread(p);
+        threads.add(t);
+        t.start();
+    }
+    }
+
 
 
     // Reads the pack file strictly, returning null on any invalidity
@@ -101,6 +143,7 @@ public class CardGame {
             return null;
         }
         return list;
+        
     }
 
 }

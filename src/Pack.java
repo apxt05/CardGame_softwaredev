@@ -1,11 +1,11 @@
 // Purpose - Loads and validates the pack of 8n cards from an input file.
 // Thread Safety - Should be immutable once loaded
 
-import java.util.List;
-import java.util.ArrayList;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Pack {
     public static List<Card> loadPack(String filename, int n){
