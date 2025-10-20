@@ -10,8 +10,12 @@
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 import java.util.Scanner;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.ReentrantLock;
 
 
 public class CardGame {
@@ -56,7 +60,7 @@ public class CardGame {
                     continue;
                 }
 
-                break; // valid input
+                break; // input is valid
 
             } catch (NumberFormatException e) {
                 System.out.println("Invalid input. Please enter a positive integer for number of players.");
@@ -64,7 +68,23 @@ public class CardGame {
         }
 
         scanner.close();        
+    
+
+    // creating the deck
+    List<Deck> decks = new ArrayList<>();
+
+
+    for (int i = 1; i <= n; i++) {
+        Queue<Card> q = new LinkedList<>();
+        decks.add(new Deck(q, i, i)); 
     }
+
+    GameController controller = new GameController();
+    ReentrantLock actionLock = new ReentrantLock();
+    AtomicInteger winnerId = new AtomicInteger(0);
+
+    }
+
 
     // Reads the pack file strictly, returning null on any invalidity
     private static List<Integer> readPackFileStrict(File f) {

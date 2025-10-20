@@ -39,4 +39,3 @@ public final class Card { //make this class thread-safe - therefore no setters
         return Integer.hashCode(value);
      }
 }
-
