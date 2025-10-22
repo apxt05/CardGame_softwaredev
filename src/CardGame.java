@@ -124,7 +124,24 @@ public class CardGame {
         threads.add(t);
         t.start();
     }
+
+    // wait for game termination
+    for (Thread t: threads) {
+        try {
+            t.join();
+        } catch (InterruptedException e) {
+            System.out.println("Error for player threads to finish.");
+            return;
+        }
+
     }
+    //write deck outputs
+    for (Deck d : decks) {
+        d.writeOutput("deck" + d.getDeckId() + "_output.txt");
+    }
+
+    System.out.println("Game end");
+}
 
 
 

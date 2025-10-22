@@ -4,8 +4,8 @@
 // Drawing and discarding are treated as one atomic action
 // At the end of a game, each deck's final contents are written to deckX_output.txt
 
-import java.util.Queue;
 import java.util.List;
+import java.util.Queue;
 
 public class Deck {
     private final int deckId;
@@ -30,5 +30,15 @@ public class Deck {
 
     public int getId() {
         return id;
+    }
+
+    public String getDeckId() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getDeckId'");
+    }
+
+    public void writeOutput(String string) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'writeOutput'");
     }
 }
