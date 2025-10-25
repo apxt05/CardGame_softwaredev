@@ -76,15 +76,16 @@ public class Player implements Runnable {
         for (int i = 0; i < hand.size(); i++) {
             Card c = hand.get(i);
             if (c.getValue() != preferredValue) {
-                return hand.remove(i);
+            // If all cards are preferred value, discard the first card
+            boolean hasPreferred = hand.stream().anyMatch(card -> card.getValue() == preferredValue);
+                if (hand.size() > 4 || hasPreferred) {
+                    return hand.remove(i);
             }
         }
-        // If all cards are preferred value, discard the first card
-        if (!hand.isEmpty()) {
-            return hand.remove(0);
-        }
-        return null; // No card to discard
     }
+        return null;
+}
+
 
     private void logAction(String message) {
         if (outputWriter != null) {
@@ -93,65 +94,70 @@ public class Player implements Runnable {
         }
     }
 
+    private synchronized String handToString() {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < hand.size(); i++) {
+            if (i > 0) sb.append(" ");
+            sb.append(hand.get(i).getValue());
+        }
+        return sb.toString();
+    }
+    
+    
+
     @Override
     public void run() {
-        // Player loop: attempt to draw from leftDeck and discard to rightDeck atomically
-        while (!controller.isGameOver()) {
-            // Check winning condition at start
+        // log initial hand before enterring loop
+        logAction("player " + playerId + " initial hand " + handToString());
+
+            synchronized (this) {
+
+            // Check winning condition at start, if yes decleare and exit
             synchronized (this) {
                 if (hasWinningHand()) {
                     logAction("Player " + playerId + " wins");
                     controller.declareWinner(playerId);
-                    break;
+                    return;
                 }
             }
 
-            // Attempt atomic draw + discard
-            actionLock.lock();
-            try {
-                if (controller.isGameOver()) break;
+            // main loop starts and continues until game over
+            while (!controller.isGameOver()) {
+                actionLock.lock();
+                try {
+                    if (controller.isGameOver()) break;
 
-                Card drawn = leftDeck.drawCard();
-                if (drawn == null) {
-                    // Nothing to draw; release lock and yield
-                    Thread.yield();
-                } else {
-                    synchronized (this) {
-                        // Add drawn card to hand
-                        if (hand.size() >= 4) {
-                            // Shouldn't happen, but discard first if full
-                            Card discarded = discardCard();
-                            rightDeck.addCard(discarded);
-                        }
-                        hand.add(drawn);
+                        Card drawn = leftDeck.drawCard();
+                        Card toDiscard = null;
 
-                        // If we now have 5 (temporary), discard one
-                        if (hand.size() > 4) {
-                            Card toDiscard = discardCard();
-                            if (toDiscard != null) {
-                                rightDeck.addCard(toDiscard);
-                                logAction("Player " + playerId + " draws " + drawn.getValue() + " and discards " + toDiscard.getValue());
+                        synchronized(this) {
+                            if (drawn != null) {
+                                hand.add(drawn);       // Add drawn card to hand
                             }
-                        } else {
-                            // Normal case: discard a non-preferred card if present
-                            Card toDiscard = discardCard();
+
+                            toDiscard = discardCard();
                             if (toDiscard != null) {
-                                rightDeck.addCard(toDiscard);
-                                logAction("Player " + playerId + " draws " + drawn.getValue() + " and discards " + toDiscard.getValue());
-                            }
+                                rightDeck.addCard(toDiscard);        // Add drawn card to hand
+                        }  
+                        
+                        if (drawn != null && toDiscard != null) {
+                            logAction("Player " + playerId + " draws " + drawn.getValue() + " and discards " + toDiscard.getValue()
+                                      + " | hand now: " + handToString());
+                        } else if (toDiscard != null) {
+                            logAction("Player " + playerId + " discards " + toDiscard.getValue() + " / hand now: " + handToString());
                         }
                     }
-                }
-            } finally {
-                actionLock.unlock();
-            }
+                } finally {
+                    actionLock.unlock();
+                    }
+                    
 
             // After action, check if player has winning hand
             synchronized (this) {
                 if (hasWinningHand()) {
                     logAction("Player " + playerId + " wins");
                     controller.declareWinner(playerId);
-                    break;
+                    return;
                 }
             }
 
@@ -163,5 +169,6 @@ public class Player implements Runnable {
                 break;
             }
         }
+    }
     }
 }
