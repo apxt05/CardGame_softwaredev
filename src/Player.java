@@ -104,7 +104,7 @@ public class Player implements Runnable {
     }
     
     // this is to choose which card is to be discarded after lastDrawn is added to hand, non preffered card is preferred 
-    private synchronized Card chooseDiscard(card lastDrawn) {
+    private synchronized Card chooseDiscard(Card lastDrawn) {
         for (int i = 0; i < hand.size(); i++) {
             Card c = hand.get(i);
             if (c.getValue() != preferredValue) {
@@ -126,67 +126,79 @@ public class Player implements Runnable {
     
 
     @Override
-    public void run() {
-        // log initial hand before enterring loop
+public void run() {
+    try {
+        // Log initial hand once
         logAction("player " + playerId + " initial hand " + handToString());
 
-            synchronized (this) {
+        synchronized (this) {
+            if (hasWinningHand()) {
+                logAction("player " + playerId + " wins");
+                controller.declareWinner(playerId);
+                return;
+            }
+        }
 
-            // Check winning condition at start, if yes decleare and exit
+        // Main loop
+        while (!controller.isGameOver()) {
+            actionLock.lock();
+            try {
+                if (controller.isGameOver()) break;
+
+                // Draw a card 
+                Card drawn = leftDeck.drawCard();
+                if (drawn == null) {
+                    // nothing to draw this iteration; yield so others can run
+                    Thread.yield();
+                } else {
+                    Card toDiscard = null;
+
+                    // Update hand and choose discard
+                    synchronized (this) {
+                        // add drawn card first
+                        hand.add(drawn);
+
+                        // choose discard taking last drawn into account
+                        toDiscard = chooseDiscard(drawn);
+
+                        // defensive fallback: ensure hand size <= 4
+                        if (toDiscard == null && hand.size() > 4) {
+                            toDiscard = hand.remove(hand.size() - 1);
+                        }
+                    } // end synchronized(this)
+
+                    // place discarded card into right deck (outside synchronized block)
+                    if (toDiscard != null) {
+                        rightDeck.addCard(toDiscard);
+                        logAction("player " + playerId + " draws " + drawn.getValue()
+                                + " and discards " + toDiscard.getValue()
+                                + " | hand now: " + handToString());
+                    } else {
+                        logAction("player " + playerId + " draws " + drawn.getValue()
+                                + " and discards none | hand now: " + handToString());
+                    }
+                }
+            } finally {
+                actionLock.unlock();
+            }
+
+            // After action, check for a win
             synchronized (this) {
                 if (hasWinningHand()) {
-                    logAction("Player " + playerId + " wins");
+                    logAction("player " + playerId + " wins");
                     controller.declareWinner(playerId);
-                    return;
+                    // Removed the break statement as it is not needed here
                 }
             }
 
-            // main loop starts and continues until game over
-            while (!controller.isGameOver()) {
-                actionLock.lock();
-                try {
-                    if (controller.isGameOver()) break;
-                
-                    // Attempt to draw
-                    Card drawn = leftDeck.drawCard(); // may return null or block
-                
-                    if (drawn == null) {
-                        Thread.yield();
-                    } else {
-                        Card toDiscard = null;
-                
-                        // update hand and choose discard
-                        synchronized (this) {
-                            // add the drawn card to  
-                            hand.add(drawn);
-                
-                            // choose discard taking the new drawn card into account
-                            toDiscard = chooseDiscard(drawn);
-                
-                            // if chooseDiscard returned null
-                            // ensure hand size is <= 4
-                            if (toDiscard == null && hand.size() > 4) {
-                                toDiscard = hand.remove(hand.size() - 1);
-                            }
-                        }
-                
-                        // place the discarded card into the right deck
-                        if (toDiscard != null) {
-                            rightDeck.addCard(toDiscard);
-                            logAction("player " + playerId + " draws " + drawn.getValue()
-                                      + " and discards " + toDiscard.getValue()
-                                      + " | hand now: " + handToString());
-                        } else {
-                            // shouldn't happen normally, but log for debugging
-                            logAction("player " + playerId + " draws " + drawn.getValue()
-                                      + " and discards none | hand now: " + handToString());
-                        }
-                    }
-                } finally {
-                    actionLock.unlock();
-                }
-                
-                    
+            // small sleep to avoid busy spin
+            try { Thread.sleep(1); } catch (InterruptedException e) { Thread.currentThread().interrupt(); break; }
+        }
+    } finally {
+        // ensure writer closed when thread ends (flushes remaining lines)
+        if (outputWriter != null) outputWriter.close();
+    }
+
 
             // After action, check if player has winning hand
             synchronized (this) {
@@ -196,15 +208,6 @@ public class Player implements Runnable {
                     return;
                 }
             }
-
-            // Small sleep to avoid busy spin
-            try {
-                Thread.sleep(1);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                break;
-            }
         }
-    }
-    }
+        
 }
