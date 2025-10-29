@@ -103,6 +103,26 @@ public class Player implements Runnable {
         return sb.toString();
     }
     
+    // this is to choose which card is to be discarded after lastDrawn is added to hand, non preffered card is preferred 
+    private synchronized Card chooseDiscard(card lastDrawn) {
+        for (int i = 0; i < hand.size(); i++) {
+            Card c = hand.get(i);
+            if (c.getValue() != preferredValue) {
+                return hand.remove(i);
+            }
+        }
+        //IF no non preffered card is found, discard last drawn or same value card
+        for (int i = hand.size() - 1; i >= 0; i--) {
+            Card c = hand.get(i);
+            if (c == lastDrawn || c.getValue() == lastDrawn.getValue()) {
+                return hand.remove(i);
+            }
+        }
+        return null;
+    }
+        
+    
+    
     
 
     @Override
@@ -126,30 +146,46 @@ public class Player implements Runnable {
                 actionLock.lock();
                 try {
                     if (controller.isGameOver()) break;
-
-                        Card drawn = leftDeck.drawCard();
+                
+                    // Attempt to draw
+                    Card drawn = leftDeck.drawCard(); // may return null or block
+                
+                    if (drawn == null) {
+                        Thread.yield();
+                    } else {
                         Card toDiscard = null;
-
-                        synchronized(this) {
-                            if (drawn != null) {
-                                hand.add(drawn);       // Add drawn card to hand
+                
+                        // update hand and choose discard
+                        synchronized (this) {
+                            // add the drawn card to  
+                            hand.add(drawn);
+                
+                            // choose discard taking the new drawn card into account
+                            toDiscard = chooseDiscard(drawn);
+                
+                            // if chooseDiscard returned null
+                            // ensure hand size is <= 4
+                            if (toDiscard == null && hand.size() > 4) {
+                                toDiscard = hand.remove(hand.size() - 1);
                             }
-
-                            toDiscard = discardCard();
-                            if (toDiscard != null) {
-                                rightDeck.addCard(toDiscard);        // Add drawn card to hand
-                        }  
-                        
-                        if (drawn != null && toDiscard != null) {
-                            logAction("Player " + playerId + " draws " + drawn.getValue() + " and discards " + toDiscard.getValue()
+                        }
+                
+                        // place the discarded card into the right deck
+                        if (toDiscard != null) {
+                            rightDeck.addCard(toDiscard);
+                            logAction("player " + playerId + " draws " + drawn.getValue()
+                                      + " and discards " + toDiscard.getValue()
                                       + " | hand now: " + handToString());
-                        } else if (toDiscard != null) {
-                            logAction("Player " + playerId + " discards " + toDiscard.getValue() + " / hand now: " + handToString());
+                        } else {
+                            // shouldn't happen normally, but log for debugging
+                            logAction("player " + playerId + " draws " + drawn.getValue()
+                                      + " and discards none | hand now: " + handToString());
                         }
                     }
                 } finally {
                     actionLock.unlock();
-                    }
+                }
+                
                     
 
             // After action, check if player has winning hand
