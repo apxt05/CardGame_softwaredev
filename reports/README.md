@@ -1,5 +1,9 @@
 # Software Development Card Game
 
+***Candidate Names:***
+Pheng Xuan Ting
+Rumi Mansoubi
+
 Multi-threaded card game where each player collects four cards of their preferred value.
 Game uses threads to run concurrent player moves, and synchronisation to ensure thread-safe interactions.
 

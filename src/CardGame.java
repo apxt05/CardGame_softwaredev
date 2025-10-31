@@ -15,13 +15,18 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Queue;
 import java.util.Scanner;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 
 
+
 public class CardGame {
+    private List<Player> players;
+    private List<Deck> decks;
+    private GameController controller;
+
+
   
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
@@ -78,8 +83,7 @@ public class CardGame {
 
 
     for (int i = 1; i <= n; i++) {
-        Queue<Card> q = new LinkedList<>();
-        decks.add(new Deck(q, i, i)); 
+        decks.add(new Deck(new LinkedList<>(), i));
     }
 
     GameController controller = new GameController(); // to handle gameover
@@ -119,22 +123,18 @@ public class CardGame {
     }
     // start threads for player
     List<Thread> threads = new ArrayList<>();
-    for (Player p:players) {
+    for (Player p : players) {
         Thread t = new Thread(p);
         threads.add(t);
         t.start();
     }
 
-    // wait for game termination
-    for (Thread t: threads) {
-        try {
-            t.join();
-        } catch (InterruptedException e) {
-            System.out.println("Error for player threads to finish.");
-            return;
-        }
-
+    // Wait for threads
+    for (Thread t : threads) {
+        try { t.join(); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
     }
+
+
     //write deck outputs
     for (Deck d : decks) {
         d.writeOutput("deck" + d.getDeckId() + "_output.txt");

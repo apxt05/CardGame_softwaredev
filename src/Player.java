@@ -56,9 +56,9 @@ public class Player implements Runnable {
     // Hand size should be at 4
 
     public synchronized void addCardToHand(Card c) {
-        if (hand.size() >= 4) throw new IllegalStateException("Hand has 4 cards already.");
+        if (c == null) throw new IllegalArgumentException("Card cannot be null");
+        if (hand.size() >= 4) throw new IllegalStateException("Hand already has 4 cards");
         hand.add(c);
-
     }
     
 
@@ -67,24 +67,32 @@ public class Player implements Runnable {
         if (hand.size() != 4) return false;
         int v = hand.get(0).getValue();
 
-        for (Card c: hand) if (c.getValue() != v) return false;
+        for (Card c: hand){
+
+         if (c.getValue() != v) 
+         return false;
+    }
         return true;
     }
 
-    private synchronized Card discardCard() {
-        // Discard a card that is not the preferred value, if possible
+    // this is to choose which card is to be discarded after lastDrawn is added to hand, non preffered card is preferred 
+    private synchronized Card chooseDiscard(Card lastDrawn) {
         for (int i = 0; i < hand.size(); i++) {
             Card c = hand.get(i);
             if (c.getValue() != preferredValue) {
-            // If all cards are preferred value, discard the first card
-            boolean hasPreferred = hand.stream().anyMatch(card -> card.getValue() == preferredValue);
-                if (hand.size() > 4 || hasPreferred) {
-                    return hand.remove(i);
+                return hand.remove(i);
             }
         }
+        //IF no non preffered card is found, discard last drawn or same value card
+        for (int i = hand.size() - 1; i >= 0; i--) {
+            Card c = hand.get(i);
+            if (c == lastDrawn || c.getValue() == lastDrawn.getValue()) {
+                return hand.remove(i);
+            }
+        }
+        return hand.isEmpty() ? null : hand.remove(hand.size() - 1);
     }
-        return null;
-}
+        
 
 
     private void logAction(String message) {
@@ -103,30 +111,12 @@ public class Player implements Runnable {
         return sb.toString();
     }
     
-    // this is to choose which card is to be discarded after lastDrawn is added to hand, non preffered card is preferred 
-    private synchronized Card chooseDiscard(Card lastDrawn) {
-        for (int i = 0; i < hand.size(); i++) {
-            Card c = hand.get(i);
-            if (c.getValue() != preferredValue) {
-                return hand.remove(i);
-            }
-        }
-        //IF no non preffered card is found, discard last drawn or same value card
-        for (int i = hand.size() - 1; i >= 0; i--) {
-            Card c = hand.get(i);
-            if (c == lastDrawn || c.getValue() == lastDrawn.getValue()) {
-                return hand.remove(i);
-            }
-        }
-        return null;
-    }
-        
     
     
     
 
     @Override
-public void run() {
+    public void run() {
     try {
         // Log initial hand once
         logAction("player " + playerId + " initial hand " + handToString());
@@ -142,45 +132,42 @@ public void run() {
         // Main loop
         while (!controller.isGameOver()) {
             actionLock.lock();
+            // place discarded card into right deck (outside synchronized block)
+
             try {
                 if (controller.isGameOver()) break;
 
-                // Draw a card 
                 Card drawn = leftDeck.drawCard();
+
                 if (drawn == null) {
-                    // nothing to draw this iteration; yield so others can run
+                    // nothing to draw right now; yield to let others run
                     Thread.yield();
                 } else {
-                    Card toDiscard = null;
-
-                    // Update hand and choose discard
+                    Card toDiscard;
+            
+                    // Add drawn to hand and choose discard while holding the hand lock
                     synchronized (this) {
-                        // add drawn card first
-                        hand.add(drawn);
-
-                        // choose discard taking last drawn into account
-                        toDiscard = chooseDiscard(drawn);
-
-                        // defensive fallback: ensure hand size <= 4
+                        hand.add(drawn); // important — add the drawn card into the hand first
+                        toDiscard = chooseDiscard(drawn); // prefer non-preferred cards
+                        // defensive: ensure hand size <= 4
                         if (toDiscard == null && hand.size() > 4) {
                             toDiscard = hand.remove(hand.size() - 1);
                         }
                     } // end synchronized(this)
-
-                    // place discarded card into right deck (outside synchronized block)
                     if (toDiscard != null) {
                         rightDeck.addCard(toDiscard);
-                        logAction("player " + playerId + " draws " + drawn.getValue()
-                                + " and discards " + toDiscard.getValue()
-                                + " | hand now: " + handToString());
+                        logAction("Player " + playerId + " draws " + drawn.getValue()
+                              + " and discards " + toDiscard.getValue()
+                              + " | hand now: " + handToString());
                     } else {
-                        logAction("player " + playerId + " draws " + drawn.getValue()
-                                + " and discards none | hand now: " + handToString());
-                    }
-                }
-            } finally {
-                actionLock.unlock();
+                        // defensive logging (shouldn't normally happen)
+                        logAction("Player " + playerId + " draws " + drawn.getValue()
+                              + " and discards none | hand now: " + handToString());
+             }
             }
+        } finally {
+            actionLock.unlock();
+        }
 
             // After action, check for a win
             synchronized (this) {
@@ -205,7 +192,6 @@ public void run() {
                 if (hasWinningHand()) {
                     logAction("Player " + playerId + " wins");
                     controller.declareWinner(playerId);
-                    return;
                 }
             }
         }
