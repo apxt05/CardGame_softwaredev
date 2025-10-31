@@ -96,11 +96,13 @@ public class Player implements Runnable {
 
 
     private void logAction(String message) {
+        System.out.println(message); // so you see terminal output
         if (outputWriter != null) {
             outputWriter.println(message);
             outputWriter.flush();
         }
     }
+    
 
     private synchronized String handToString() {
         StringBuilder sb = new StringBuilder();

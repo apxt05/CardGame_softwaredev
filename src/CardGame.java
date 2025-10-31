@@ -121,6 +121,14 @@ public class CardGame {
             players.get(i).addCardToHand(new Card(cardValue));
         }
     }
+
+    // Fill the decks from the remaining pack cards (round-robin)
+    for (int i = 0; cardIndex < rawPack.size(); i++) {
+        int deckIdx = i % n; // 0-based index of deck
+        int cardValue = rawPack.get(cardIndex++);
+        decks.get(deckIdx).addCard(new Card(cardValue));
+}
+
     // start threads for player
     List<Thread> threads = new ArrayList<>();
     for (Player p : players) {
@@ -128,6 +136,8 @@ public class CardGame {
         threads.add(t);
         t.start();
     }
+
+    
 
     // Wait for threads
     for (Thread t : threads) {
