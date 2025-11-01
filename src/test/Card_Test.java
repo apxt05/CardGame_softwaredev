@@ -1,4 +1,4 @@
-package Tests;
+package test;
 
 
 import com.ibm.decision.run.test.junit5.DecisionTest;

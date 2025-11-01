@@ -40,7 +40,7 @@ public class CardGame {
         try {
             n = Integer.parseInt(input);
             if (n <= 0) {
-                System.out.println("Number of players must be a positive integer.");
+                System.out.println("Number of players must be a positive integer. Try again!");
                 continue; 
             
         }

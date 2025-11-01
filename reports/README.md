@@ -1,46 +1,58 @@
-# Software Development Card Game
+*CARD GAME SIMULATION README FILE*
 
-***Candidate Names:***
-Pheng Xuan Ting
-Rumi Mansoubi
-
-Multi-threaded card game where each player collects four cards of their preferred value.
-Game uses threads to run concurrent player moves, and synchronisation to ensure thread-safe interactions.
-
-**SPECIFICATION**
-
-Requirements:
-1. n = number of players (input)
-2. Pack file with 8n non-negative integers
-3. Draw card from left deck, discard on right deck (atomic)
-4. Each player must have 4 cards in their hand at all times
-5. Game ends when player collects 4 cards with the same value
-
-**CODE DESIGN**
-
-Classes
-1. Card.java = immutable class that represents a card value
-2. Deck.java = Represents a deck of cards, drawing and discarding of cards are programmed here
-3. Player.java = Runnable class, player holds a deck with 4 cards, draws to left deck and discards to the right deck
-4. GameController.java = Manages the game status and declares winning status
-5. CardGame.java = Main class, initialise game, read input file, create player and deck, deal cards and threads.
-
-File Input / Output
-Pack file is read -> each player writes actions to their output file -> deck writes final state to output file
+This project is a card game simulation developed in Java language.
+This document provides an overview of the project structure and instructions for running the code.
 
 
-**GAME DESIGN**
-1. User inputs number of players of their choice, and the file path to the pack file
-2. Pack is validated 
-3. Initial hand is dealt in round robin 
-4. Player starts the threads (Check winning hand, draw card from left deck, discard card to right deck, log actions to output file)
-5. Game stops only when player has all preferred cards (same values)
-6. Terminate threads, winner status is written
+**REQUIREMENTS**
+The project requires Java 8 or higher to run.
+VSCode / Terminal
 
-**TESTS**
+**How to run the code**
+
+Using the terminal:
+Navigate to the project directory
+Run the following command:
+java -jar cards.jar
+
+      
+
+**PACK FILE FORMAT**
+1. Must contain 8n integers
+2. One integer per line only
+3. All integers are non-negative
+
+Saved as testfile.txt
+
+**Flow of game when you run the program**
+
+Enter number of players (n): 4
+Enter path to pack file: testfile.txt
+
+player 2 initial hand 2 6 2 6
+player 1 initial hand 1 5 1 5
+player 3 initial hand 3 7 3 7
+player 4 initial hand 4 8 4 8
+Player 2 draws 2 and discards 6 | hand now: 2 2 6 2
+Player 1 draws 1 and discards 5 | hand now: 1 1 5 1
+Player 4 draws 4 and discards 8 | hand now: 4 4 8 4
+Player 3 draws 3 and discards 7 | hand now: 3 3 7 3
+Player 2 draws 6 and discards 6 | hand now: 2 2 2 6
+Player 4 draws 8 and discards 8 | hand now: 4 4 4 8
+Player 1 draws 5 and discards 5 | hand now: 1 1 1 5
+Player 3 draws 7 and discards 7 | hand now: 3 3 3 7
+Player 2 draws 2 and discards 6 | hand now: 2 2 2 2
+player 2 wins
+Player 2 wins
+Game end
 
 
-**CHALLENGES DURING THE PROJECT**
+//ouput files are also generated in the folder
+
+Deck output 
+Player output
 
 
-**CONCLUSION**
+**Common mistakes to take note of**
+1. "PACK FILE INVALID" = happens when test file is not at 8n integers
+2. No terminal output after code runs= use a simpler test file to run the code
