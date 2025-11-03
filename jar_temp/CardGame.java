@@ -47,7 +47,7 @@ public class CardGame {
 
     
 
-            // load and validate pack
+            // Load and validate pack
             System.out.print("Enter path to pack file: (Enter testfile.txt to make it run :) ) ");
                 String path = scanner.nextLine().trim();
                 
@@ -78,7 +78,7 @@ public class CardGame {
         scanner.close();        
     
 
-    // create the deck
+    // creating the deck
     List<Deck> decks = new ArrayList<>();
 
 
@@ -97,9 +97,9 @@ public class CardGame {
     // deck is in ring topology
     for (int i = 1; i <= n; i++) {
         try {
-            PrintWriter outputWriter = new PrintWriter(new FileWriter("player" + i + "_output.txt")); // shows output file 
-            int leftDeckIndex = i; // allow to player draws from left deck
-            int RightDeckIndex = (i % n) + 1; // player discards on right deck
+            PrintWriter outputWriter = new PrintWriter(new FileWriter("player" + i + "_output.txt")); // output file 
+            int leftDeckIndex = i; //player draws from left deck
+            int RightDeckIndex = (i % n) + 1; // player discards here
             
             //create player object
             players.add(new Player(i, decks.get(leftDeckIndex - 1), decks.get(RightDeckIndex - 1), leftDeckIndex, RightDeckIndex, controller, leftDeckIndex, RightDeckIndex, outputWriter, winnerId, actionLock));
@@ -112,7 +112,7 @@ public class CardGame {
 
     }
 
-    // dealing cards in round robin method 
+    // Dealing cards round robin
     int cardIndex = 0;
     // 4 rounds, each player gets one card per round
     for (int round = 0; round < 4; round++) {
@@ -122,14 +122,14 @@ public class CardGame {
         }
     }
 
-    // fill the decks in a round robin order
+    // Fill the decks from the remaining pack cards (round-robin)
     for (int i = 0; cardIndex < rawPack.size(); i++) {
-        int deckIdx = i % n; // 0-bsed deck index
+        int deckIdx = i % n; // 0-based index of deck
         int cardValue = rawPack.get(cardIndex++);
         decks.get(deckIdx).addCard(new Card(cardValue));
 }
 
-    // start threads (PLAYER)
+    // start threads for player
     List<Thread> threads = new ArrayList<>();
     for (Player p : players) {
         Thread t = new Thread(p);
@@ -139,13 +139,13 @@ public class CardGame {
 
     
 
-    // waiting for threads
+    // Wait for threads
     for (Thread t : threads) {
         try { t.join(); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
     }
 
 
-    // to write the deck outputs
+    //write deck outputs
     for (Deck d : decks) {
         d.writeOutput("deck" + d.getDeckId() + "_output.txt");
     }
@@ -154,7 +154,8 @@ public class CardGame {
 }
 
 
-    // read, validating pack, return null if it is invalid
+
+    // Reads the pack file strictly, returning null on any invalidity
     private static List<Integer> readPackFileStrict(File f) {
         List<Integer> list = new ArrayList<>();
         try (Scanner sc = new Scanner(f)) {

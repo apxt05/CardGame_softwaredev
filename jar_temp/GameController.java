@@ -7,42 +7,34 @@ public class GameController {
     private volatile boolean gameOver = false;
     private int winningPlayerId = 0;
     
-    // check if game over
     public synchronized boolean isGameOver() {
         return gameOver;
     }
-
-    // declaring the winner of the game
     public synchronized void declareWinner(int playerId) {
         if (!gameOver) {
             gameOver = true;
             winningPlayerId = playerId;
         }
     }
-
-    // winner ID getter
     public synchronized int getWinnerId() {
         return winningPlayerId;
     }
-
-    // set winner that is called by player
     public void setWinner(int playerId) {
         declareWinner(playerId);
     }
 
     
-    // start game
     public void startGame() {
         List<Player> players = new ArrayList<>();
 
-        // initialise players, decks, other game components here
-        //  player threads start here
+        // Initialize players, decks, and other game components here
+        // Start player threads here
         for (Player player : players) {
             new Thread(player).start();
 
             while (!this.isGameOver()) {
                 try {
-                    Thread.sleep(100); // Check every 100 milliseconds
+                    Thread.sleep(100); // Give players time to run
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 }

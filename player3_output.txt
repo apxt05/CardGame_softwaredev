@@ -1,1 +1,5 @@
 player 3 initial hand 3 7 3 7
+Player 3 draws 3 and discards 7 | hand now: 3 3 7 3
+Player 3 draws 7 and discards 7 | hand now: 3 3 3 7
+Player 3 draws 3 and discards 7 | hand now: 3 3 3 3
+player 3 wins

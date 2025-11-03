@@ -1,2 +1,5 @@
 player 2 initial hand 2 6 2 6
 Player 2 draws 2 and discards 6 | hand now: 2 2 6 2
+Player 2 draws 6 and discards 6 | hand now: 2 2 2 6
+Player 2 draws 2 and discards 6 | hand now: 2 2 2 2
+player 2 wins

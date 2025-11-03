@@ -9,31 +9,28 @@ import java.util.List;
 
 public class Pack {
     public static List<Card> loadPack(String filename, int n){
-       
-        // reads file, parse card values
         List<Card> pack = new ArrayList<>();
         try {
-            // read all lines from file
             for (String line : Files.readAllLines(Path.of(filename))) {
-                String trimmed = line.trim(); 
-                if (trimmed.isEmpty()) continue; 
-                int v; 
+                String trimmed = line.trim();
+                if (trimmed.isEmpty()) continue;
+                int v;
                 try {
-                    v = Integer.parseInt(trimmed); 
+                    v = Integer.parseInt(trimmed);
                 } catch (NumberFormatException e) {
                     throw new IllegalArgumentException("Invalid card value in pack: '" + line + "'");
                 }
                 pack.add(new Card(v));
             }
         } catch (IOException e) {
-            throw new IllegalArgumentException("Unable to read pack file: " + filename, e); 
+            throw new IllegalArgumentException("Unable to read pack file: " + filename, e);
         }
 
         if (!isValidPack(pack, n)) {
-            throw new IllegalArgumentException("Pack is not valid for n=" + n + " (must contain exactly 8n non-negative integers)"); 
+            throw new IllegalArgumentException("Pack is not valid for n=" + n + " (must contain exactly 8n non-negative integers)");
         }
 
-        return List.copyOf(pack); 
+        return List.copyOf(pack);
     }
 
 
@@ -42,11 +39,11 @@ public class Pack {
         if (pack == null) return false;
         if (n <= 0) return false;
         if (pack.size() != 8 * n) return false;
-        for (Card c : pack) { // check each card is non-negative
+        for (Card c : pack) {
             if (c == null) return false;
             if (c.getValue() < 0) return false;
         }
-        return true; // pack is valid
+        return true;
     }
 
 }

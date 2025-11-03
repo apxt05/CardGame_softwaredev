@@ -1,5 +1,3 @@
-// just a main class that can be used to run the game controller
-
 public class main {
     public static void main(String[] args) {
         GameController controller = new GameController();

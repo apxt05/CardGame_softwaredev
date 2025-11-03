@@ -20,30 +20,25 @@ public class Deck {
         this.deckId = deckId;
     }
 
-
-    // draw the card on top of the deck
     public synchronized Card drawCard() {
         return cards.poll();
     }
-
-    // add the card to the bottom of the deck
     public synchronized void addCard(Card c) {
         if (c != null) cards.offer(c);
     }
 
     
-    // get content of the deck to write output files
-    public List<Card> getContents() { 
+    
+    public List<Card> getContents() { //for writing to deck(X)_output.txt
         return List.copyOf(cards);
     }    
 
-    // deck id getter
     public int getDeckId() {
         return this.deckId;
     }
 
  
-    // to write output files
+
     public void writeOutput(String filename) {
         List<Card> snapshot;
         synchronized (this) {
@@ -56,7 +51,6 @@ public class Deck {
             sb.append(snapshot.get(i).getValue());
         }
             
-        // writing to the file
         try (PrintWriter writer = new PrintWriter(new FileWriter(filename))) {
                 writer.println(sb.toString());
             } catch (IOException e) {

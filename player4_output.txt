@@ -1,5 +1,3 @@
 player 4 initial hand 4 8 4 8
 Player 4 draws 4 and discards 8 | hand now: 4 4 8 4
 Player 4 draws 8 and discards 8 | hand now: 4 4 4 8
-Player 4 draws 4 and discards 8 | hand now: 4 4 4 4
-player 4 wins
