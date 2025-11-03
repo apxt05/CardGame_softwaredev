@@ -48,11 +48,11 @@ public class CardGame {
     
 
             // Load and validate pack
-            System.out.print("Enter path to pack file: ");
+            System.out.print("Enter path to pack file: (Enter testfile.txt to make it run :) ) ");
                 String path = scanner.nextLine().trim();
                 
             if (path.isEmpty()) {
-                System.out.println("Please enter path.");
+                System.out.println("Please enter path. (Enter testfile.txt to make it run :) )");
                 continue;
             }
 

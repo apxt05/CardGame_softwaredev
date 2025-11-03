@@ -1,3 +1,2 @@
 player 1 initial hand 1 5 1 5
 Player 1 draws 1 and discards 5 | hand now: 1 1 5 1
-Player 1 draws 5 and discards 5 | hand now: 1 1 1 5

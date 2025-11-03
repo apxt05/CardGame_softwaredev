@@ -1,20 +1,19 @@
 package test;
 
+import Card;
 
-import com.ibm.decision.run.test.junit5.DecisionTest;
-import com.ibm.decision.run.test.junit5.JSONTestDirectoryFactory;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.DynamicNode;
-import org.junit.jupiter.api.TestFactory;
- 
-import java.util.stream.Stream;
- 
-@DecisionTest(decisionFunction = "<functionID"> /* OR  decisionOperation = "<operationID>" */)
-@DisplayName("<DisplayName>")
-public class <TestClassName> {
-    @TestFactory
-    public Stream<DynamicNode> decisionTests() {
-        JSONTestDirectoryFactory.verbose = true;
-        return JSONTestDirectoryFactory.createTests(this.getClass());
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import org.junit.jupiter.api.Test;
+
+public class Card_Test {
+    @Test
+    void testCardValueAfterInitialized(){
+        assertEquals(2, new Card(2).number) ;
     }
+
+    @Test
+    void testToString(){
+        assertEquals("Card: 3", new Card(3).toString());
+    }
 }
